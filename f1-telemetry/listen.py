@@ -1,5 +1,4 @@
 import socket
-from ctypes import *
 from f1_2019_telemetry.packets import (
     unpack_udp_packet,
     PacketLapData_V1,
@@ -42,7 +41,8 @@ class PacketProcessor:
         for i, participant in enumerate(packet.participants):
             self.vehicle_index[i] = participant.name.decode()
 
-    def get_positions(self, packet):
+    @staticmethod
+    def get_positions(packet):
         return [
             Position(i, lap_data.carPosition)
             for i, lap_data in enumerate(packet.lapData)
