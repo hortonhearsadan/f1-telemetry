@@ -2,7 +2,7 @@
 
 This is to visualise f1 2019 telemtry data that has bee pre-processed by the f1-2019-telemetry package
 
-#How do i get repeatable data?
+# How do i get repeatable data?
 
 Assuming you have setup your F1 2019 game to send the UDP packets, run the following in your terminal
 
