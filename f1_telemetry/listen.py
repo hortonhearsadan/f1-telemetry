@@ -1,12 +1,17 @@
 import socket
+
 from f1_2019_telemetry.packets import (
     unpack_udp_packet,
     PacketLapData_V1,
     PacketParticipantsData_V1,
 )
 
+from f1_telemetry import server
+
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
+
+server.serve()
 
 
 class PacketProcessor:
@@ -33,8 +38,8 @@ class PacketProcessor:
             positions = self.get_positions(packet)
 
             positions.sort(key=lambda x: x.current_position)
-            for p in positions:
-                print(p.current_position, self.vehicle_index[p.vehicle_idx])
+            # for p in positions:
+            # print(p.current_position, self.vehicle_index[p.vehicle_idx])
 
     def set_vehicle_indices(self, packet):
         for i, participant in enumerate(packet.participants):
