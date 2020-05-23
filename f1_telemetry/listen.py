@@ -35,7 +35,6 @@ class PacketProcessor:
             positions.sort(key=lambda x: x.current_position)
             for p in positions:
                 print(p.current_position, self.vehicle_index[p.vehicle_idx])
-            print()
 
     def set_vehicle_indices(self, packet):
         for i, participant in enumerate(packet.participants):
