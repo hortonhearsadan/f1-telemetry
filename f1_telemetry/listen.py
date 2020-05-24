@@ -189,10 +189,9 @@ class Renderer:
         llt = self._format_time(lap_data.last_lap_time, with_millis=True)
         blt = self._format_time(lap_data.best_lap_time, with_millis=True)
 
-        if name == DRIVER_NAME:
-            name = format_name(name)
+        lb_name = format_name(name) if name == DRIVER_NAME else name
 
-        msg = f"{pos:2d}. {name:20s} | {clt} | {llt} | {blt}"
+        msg = f"{pos:2d}. {lb_name:20s} | {clt} | {llt} | {blt}"
 
         self.scr.addstr(
             self._lap_data_y_offset + pos - 1,
