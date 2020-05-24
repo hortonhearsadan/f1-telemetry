@@ -119,8 +119,7 @@ class PacketProcessor:
             self.vehicle_index[i] = name
             self.team_index[name] = participant.teamId
 
-            if participant.driverId == 15:  # Bottas
-                self.my_id = i
+        self.my_id = packet.header.playerCarIndex
 
     @staticmethod
     def get_positions(packet):
