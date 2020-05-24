@@ -1,6 +1,8 @@
 import curses
 
 # curses.COLOR_MERC = curses.init_color(101,1,0,0)
+from settings import DRIVER_NAME
+
 TEAM_COLOUR_OFFSET = 100
 STATUS_COLOUR_OFFSET = 200
 
@@ -39,5 +41,7 @@ def init_status_colours():
 
 
 def format_name(name: str):
-    split_names = name.split(" ")
-    return split_names[0][0].upper() + ". " + split_names[-1].upper()
+    if name == DRIVER_NAME:
+        split_names = name.split(" ")
+        return split_names[0][0].upper() + ". " + split_names[-1].upper()
+    return name

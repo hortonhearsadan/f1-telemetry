@@ -5,7 +5,6 @@ import signal
 import socket
 import threading
 import time
-from datetime import timedelta
 
 from f1_2019_telemetry.packets import (
     CarTelemetryData_V1,
@@ -17,15 +16,12 @@ from f1_2019_telemetry.packets import (
     unpack_udp_packet,
 )
 
-from f1_telemetry import server
 from f1_telemetry.formatting import (
-    init_team_colour_pairs,
     init_colours,
     TEAM_COLOUR_OFFSET,
     STATUS_COLOUR_OFFSET,
     format_name,
 )
-from settings import DRIVER_NAME
 
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
@@ -189,9 +185,7 @@ class Renderer:
         llt = self._format_time(lap_data.last_lap_time, with_millis=True)
         blt = self._format_time(lap_data.best_lap_time, with_millis=True)
 
-        lb_name = format_name(name) if name == DRIVER_NAME else name
-
-        msg = f"{pos:2d}. {lb_name:20s} | {clt} | {llt} | {blt}"
+        msg = f"{pos:2d}. {format_name(name):20s} | {clt} | {llt} | {blt}"
 
         self.scr.addstr(
             self._lap_data_y_offset + pos - 1,
