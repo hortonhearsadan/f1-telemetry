@@ -21,9 +21,4 @@ def init_team_colour_pairs():
     for i, rgb in team_colours_rgb_by_id.items():
         j = 100 + i  # avoid collision with real colours
         curses.init_color(j, *rgb)
-        if i == 3:
-            curses.init_pair(
-                j, curses.COLOR_WHITE, curses.COLOR_BLACK
-            )  # eurgh williams
-        else:
-            curses.init_pair(j, j, curses.COLOR_WHITE)
+        curses.init_pair(j, curses.COLOR_WHITE, j)
