@@ -193,7 +193,7 @@ class Renderer:
             self._lap_data_y_offset + pos - 1,
             2,
             msg,
-            curses.color_pair(TEAM_COLOUR_OFFSET + team_index[name]) | curses.A_BOLD,
+            self._get_team_colour(team_index,name),
         )
         self.scr.clrtoeol()
 
@@ -281,6 +281,9 @@ class Renderer:
         elif percentage > 70:
             return curses.color_pair(STATUS_COLOUR_OFFSET)
         return curses.color_pair(0)
+
+    def _get_team_colour(self, team_index, name):
+        return curses.color_pair(TEAM_COLOUR_OFFSET + team_index[name]) | curses.A_BOLD
 
 
 class Position:
