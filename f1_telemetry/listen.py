@@ -100,9 +100,7 @@ class PacketProcessor:
             self._renderer.print_lap_data_header()
             for p in positions:
                 self._renderer.print_lap_data(
-                    p,
-                    self.vehicle_index[p.vehicle_idx],
-                    self.team_index,
+                    p, self.vehicle_index[p.vehicle_idx], self.team_index,
                 )
 
         elif isinstance(packet, PacketCarTelemetryData_V1):
@@ -186,7 +184,12 @@ class Renderer:
 
         msg = f"{pos:2d}. {name:20s} | {clt} | {llt} | {blt}"
 
-        self.scr.addstr(self._lap_data_y_offset + pos - 1, 2, msg, curses.color_pair(100 + team_index[name]))
+        self.scr.addstr(
+            self._lap_data_y_offset + pos - 1,
+            2,
+            msg,
+            curses.color_pair(100 + team_index[name]) | curses.A_BOLD,
+        )
         self.scr.clrtoeol()
 
     def print_car_data(self, car_data: CarTelemetryData_V1):
