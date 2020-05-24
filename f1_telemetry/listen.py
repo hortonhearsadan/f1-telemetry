@@ -18,6 +18,7 @@ from f1_2019_telemetry.packets import (
 )
 
 from f1_telemetry import server
+from f1_telemetry.formatting import init_team_colour_pairs
 
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
@@ -31,6 +32,7 @@ class PacketProcessor:
         socket.settimeout(0)
 
         self.vehicle_index = {}
+        self.team_index = {}
 
         self._renderer = None
         self.my_id = None
@@ -89,7 +91,7 @@ class PacketProcessor:
             self._renderer.print_session_info(packet)
 
         elif isinstance(packet, PacketParticipantsData_V1):
-            self.set_vehicle_indices(packet)
+            self.set_indices(packet)
 
         elif isinstance(packet, PacketLapData_V1) and self.is_initialised:
             positions = self.get_positions(packet)
@@ -97,7 +99,11 @@ class PacketProcessor:
             positions.sort(key=lambda x: x.position)
             self._renderer.print_lap_data_header()
             for p in positions:
-                self._renderer.print_lap_data(p, self.vehicle_index[p.vehicle_idx])
+                self._renderer.print_lap_data(
+                    p,
+                    self.vehicle_index[p.vehicle_idx],
+                    self.team_index,
+                )
 
         elif isinstance(packet, PacketCarTelemetryData_V1):
             if self.my_id is not None:
@@ -106,9 +112,11 @@ class PacketProcessor:
 
         self._renderer.refresh()
 
-    def set_vehicle_indices(self, packet):
+    def set_indices(self, packet):
         for i, participant in enumerate(packet.participants):
-            self.vehicle_index[i] = participant.name.decode()
+            name = participant.name.decode()
+            self.vehicle_index[i] = name
+            self.team_index[name] = participant.teamId
 
             if participant.driverId == 15:  # Bottas
                 self.my_id = i
@@ -130,6 +138,8 @@ class Renderer:
         self.scr.leaveok(True)
 
         self.h, self.w = self.scr.getmaxyx()
+
+        self._set_team_colours()
 
         self._session_y_offset = 0
         self._lap_data_header_y_offset = 3
@@ -168,7 +178,7 @@ class Renderer:
 
         self.scr.addstr(self._lap_data_header_y_offset, 2, msg)
 
-    def print_lap_data(self, lap_data: "Position", name: str):
+    def print_lap_data(self, lap_data: "Position", name: str, team_index: dict):
         pos = lap_data.position
         clt = self._format_time(lap_data.current_lap_time, with_millis=True)
         llt = self._format_time(lap_data.last_lap_time, with_millis=True)
@@ -176,7 +186,7 @@ class Renderer:
 
         msg = f"{pos:2d}. {name:20s} | {clt} | {llt} | {blt}"
 
-        self.scr.addstr(self._lap_data_y_offset + pos - 1, 2, msg)
+        self.scr.addstr(self._lap_data_y_offset + pos - 1, 2, msg, curses.color_pair(100 + team_index[name]))
         self.scr.clrtoeol()
 
     def print_car_data(self, car_data: CarTelemetryData_V1):
@@ -245,6 +255,9 @@ class Renderer:
             7: "7th",
             8: "8th",
         }[n]
+
+    def _set_team_colours(self):
+        init_team_colour_pairs()
 
 
 class Position:
