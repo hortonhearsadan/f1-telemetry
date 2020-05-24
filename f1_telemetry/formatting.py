@@ -25,12 +25,14 @@ def init_colours():
 
     init_status_colours()
 
+
 def init_team_colour_pairs():
     for i, rgb in team_colours_rgb_by_id.items():
         j = TEAM_COLOUR_OFFSET + i  # avoid collision with real colours
         curses.init_color(j, *rgb)
         curses.init_pair(j, curses.COLOR_WHITE, j)
 
+
 def init_status_colours():
     curses.init_pair(STATUS_COLOUR_OFFSET, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(STATUS_COLOUR_OFFSET +1, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(STATUS_COLOUR_OFFSET + 1, curses.COLOR_RED, curses.COLOR_BLACK)

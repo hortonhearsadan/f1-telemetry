@@ -18,7 +18,12 @@ from f1_2019_telemetry.packets import (
 )
 
 from f1_telemetry import server
-from f1_telemetry.formatting import init_team_colour_pairs, init_colours, TEAM_COLOUR_OFFSET, STATUS_COLOUR_OFFSET
+from f1_telemetry.formatting import (
+    init_team_colour_pairs,
+    init_colours,
+    TEAM_COLOUR_OFFSET,
+    STATUS_COLOUR_OFFSET,
+)
 
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
@@ -194,21 +199,19 @@ class Renderer:
 
     def print_car_data(self, car_data: CarTelemetryData_V1):
         self.scr.addstr(
-            self._current_car_data_y_offset,
-            2,
-            f"{car_data.speed:3d} km/h | "
+            self._current_car_data_y_offset, 2, f"{car_data.speed:3d} km/h | "
         )
         self.scr.addstr(
             self._current_car_data_y_offset,
             15,
-            f"{car_data.engineRPM:5d} RPM | ", self._get_rpm_color(car_data.revLightsPercent)
+            f"{car_data.engineRPM:5d} RPM | ",
+            self._get_rpm_color(car_data.revLightsPercent),
         )
         self.scr.addstr(
             self._current_car_data_y_offset,
             30,
             f"Gear: {self._format_gear(car_data.gear)}",
         )
-
 
         self.scr.clrtoeol()
         self.scr.addstr(
@@ -278,6 +281,7 @@ class Renderer:
         elif percentage > 70:
             return curses.color_pair(STATUS_COLOUR_OFFSET)
         return curses.color_pair(0)
+
 
 class Position:
     def __init__(self, vehicle_idx, lap_data: LapData_V1):
