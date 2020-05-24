@@ -16,6 +16,7 @@ from f1_2019_telemetry.packets import (
     unpack_udp_packet,
 )
 
+from f1_telemetry.ascii_car import AsciiCar
 from f1_telemetry.formatting import (
     init_colours,
     TEAM_COLOUR_OFFSET,
@@ -141,10 +142,13 @@ class Renderer:
 
         self._set_colours()
 
+        self.car = AsciiCar()
+
         self._session_y_offset = 0
         self._lap_data_header_y_offset = 3
         self._lap_data_y_offset = 5
         self._current_car_data_y_offset = 26
+        self._car_x_offset = 80
 
     def destroy(self):
         curses.curs_set(self._cursor_mode)
@@ -219,6 +223,10 @@ class Renderer:
         )
         self.scr.clrtoeol()
 
+        self.render_car()
+
+        self.scr.clrtoeol()
+
     def _center(self, s: str) -> int:
         return (self.w - len(s)) // 2
 
@@ -281,6 +289,91 @@ class Renderer:
 
     def _get_team_colour(self, team_index, name):
         return curses.color_pair(TEAM_COLOUR_OFFSET + team_index[name]) | curses.A_BOLD
+
+    def render_car(self):
+        self._render_fl_tyre()
+        self._render_fr_tyre()
+        self._render_bl_tyre()
+        self._render_br_tyre()
+        self._render_body()
+        self._render_left_wing()
+        self._render_right_wing()
+        self._render_rear_wing()
+
+    def _render_ascii(self, ascii_string, y_offset, x_offset, colour):
+        for y, line in enumerate(ascii_string.splitlines()):
+            self.scr.addstr(y_offset + y, x_offset, line, colour)
+
+    def _render_left_wing(self):
+        y = self._lap_data_y_offset
+        x = self._car_x_offset + self.car.tyre_width - 1
+        self._render_ascii(
+            self.car.left_wing, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+        )
+
+    def _render_right_wing(self):
+        y = self._lap_data_y_offset
+        x = self._car_x_offset + self.car.left_wing_width + self.car.tyre_width - 1
+        self._render_ascii(
+            self.car.right_wing, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+        )
+
+    def _render_body(self):
+        y = self._lap_data_y_offset + self.car.left_wing_height - 1
+        x = self._car_x_offset + self.car.tyre_width
+        self._render_ascii(self.car.body, y, x, curses.color_pair(STATUS_COLOUR_OFFSET))
+
+    def _render_rear_wing(self):
+        y = (
+            self._lap_data_y_offset
+            + self.car.left_wing_height
+            + self.car.body_height
+            - 1
+        )
+        x = self._car_x_offset + self.car.tyre_width - 2
+        self._render_ascii(
+            self.car.rear_wing, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+        )
+
+    def _render_fl_tyre(self):
+        y = self._lap_data_y_offset + self.car.left_wing_height
+        x = self._car_x_offset
+        self._render_ascii(
+            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+        )
+
+    def _render_fr_tyre(self):
+        y = self._lap_data_y_offset + self.car.left_wing_height
+        x = self._car_x_offset + self.car.tyre_width + self.car.body_width
+        self._render_ascii(
+            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+        )
+
+    def _render_bl_tyre(self):
+        y = (
+            self._lap_data_y_offset
+            + self.car.left_wing_height
+            + self.car.body_height
+            - self.car.tyre_height
+            - 1
+        )
+        x = self._car_x_offset
+        self._render_ascii(
+            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+        )
+
+    def _render_br_tyre(self):
+        y = (
+            self._lap_data_y_offset
+            + self.car.left_wing_height
+            + self.car.body_height
+            - self.car.tyre_height
+            - 1
+        )
+        x = self._car_x_offset + self.car.tyre_width + self.car.body_width
+        self._render_ascii(
+            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+        )
 
 
 class Position:
