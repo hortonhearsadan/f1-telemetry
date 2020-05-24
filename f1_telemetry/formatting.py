@@ -36,3 +36,8 @@ def init_team_colour_pairs():
 def init_status_colours():
     curses.init_pair(STATUS_COLOUR_OFFSET, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(STATUS_COLOUR_OFFSET + 1, curses.COLOR_RED, curses.COLOR_BLACK)
+
+
+def format_name(name: str):
+    split_names = name.split(" ")
+    return split_names[0][0].upper() + ". " + split_names[-1].upper()

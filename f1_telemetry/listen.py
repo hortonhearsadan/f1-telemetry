@@ -23,7 +23,9 @@ from f1_telemetry.formatting import (
     init_colours,
     TEAM_COLOUR_OFFSET,
     STATUS_COLOUR_OFFSET,
+    format_name,
 )
+from settings import DRIVER_NAME
 
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
@@ -187,13 +189,16 @@ class Renderer:
         llt = self._format_time(lap_data.last_lap_time, with_millis=True)
         blt = self._format_time(lap_data.best_lap_time, with_millis=True)
 
+        if name == DRIVER_NAME:
+            name = format_name(name)
+
         msg = f"{pos:2d}. {name:20s} | {clt} | {llt} | {blt}"
 
         self.scr.addstr(
             self._lap_data_y_offset + pos - 1,
             2,
             msg,
-            self._get_team_colour(team_index,name),
+            self._get_team_colour(team_index, name),
         )
         self.scr.clrtoeol()
 
@@ -236,7 +241,7 @@ class Renderer:
             6: "Qualification 2",
             7: "Qualification 3",
             8: "Qualification (Short)",
-            9: "OSQ?",
+            9: "One-Shot Qualifying",
             10: "Race",
             11: "Race 2",
             12: "Time Trial",
