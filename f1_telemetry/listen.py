@@ -14,6 +14,7 @@ from f1_2019_telemetry.packets import (
 )
 
 from f1_telemetry import server
+from f1_telemetry.formatting import init_team_colour_pairs
 
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
@@ -26,6 +27,7 @@ class PacketProcessor:
         self.udp_socket = socket
 
         self.vehicle_index = {}
+        self.team_index = {}
 
         self.renderer = Renderer()
         self.renderer.clear()
@@ -49,7 +51,7 @@ class PacketProcessor:
             )
 
         elif isinstance(packet, PacketParticipantsData_V1):
-            self.set_vehicle_indices(packet)
+            self.set_indices(packet)
 
         elif isinstance(packet, PacketLapData_V1) and self.is_initialised:
             positions = self.get_positions(packet)
@@ -57,7 +59,9 @@ class PacketProcessor:
             positions.sort(key=lambda x: x.current_position)
             for p in positions:
                 self.renderer.print_position(
-                    p.current_position, self.vehicle_index[p.vehicle_idx]
+                    p.current_position,
+                    self.vehicle_index[p.vehicle_idx],
+                    self.team_index,
                 )
 
         elif isinstance(packet, PacketCarTelemetryData_V1):
@@ -67,9 +71,11 @@ class PacketProcessor:
 
         self.renderer.refresh()
 
-    def set_vehicle_indices(self, packet):
+    def set_indices(self, packet):
         for i, participant in enumerate(packet.participants):
-            self.vehicle_index[i] = participant.name.decode()
+            name = participant.name.decode()
+            self.vehicle_index[i] = name
+            self.team_index[name] = participant.teamId
 
             if participant.driverId == 15:  # Bottas
                 self.my_id = i
@@ -91,6 +97,8 @@ class Renderer:
         self.scr = curses.initscr()
         self.scr.leaveok(True)
 
+        self._set_team_colours()
+
     def clear(self):
         self.scr.clear()
         self.refresh()
@@ -105,8 +113,13 @@ class Renderer:
 
         self.scr.addstr(0, 0, f"SESSION TIME: {h:02d}:{m:02d}:{s:02d}")
 
-    def print_position(self, position: int, name: str):
-        self.scr.addstr(1 + position, 0, f"{position:2d}. {name}")
+    def print_position(self, position: int, name: str, team_index):
+        self.scr.addstr(
+            1 + position,
+            0,
+            f"{position:2d}. {name}",
+            curses.color_pair(100 + team_index[name]),
+        )
         self.scr.clrtoeol()
 
     def print_car_data(self, car_data: CarTelemetryData_V1):
@@ -139,6 +152,9 @@ class Renderer:
             7: "7th",
             8: "8th",
         }[n]
+
+    def _set_team_colours(self):
+        init_team_colour_pairs()
 
 
 class Position:
