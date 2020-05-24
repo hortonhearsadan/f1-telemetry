@@ -18,7 +18,7 @@ from f1_2019_telemetry.packets import (
 )
 
 from f1_telemetry import server
-from f1_telemetry.formatting import init_team_colour_pairs
+from f1_telemetry.formatting import init_team_colour_pairs, init_colours, TEAM_COLOUR_OFFSET, STATUS_COLOUR_OFFSET
 
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
@@ -137,7 +137,7 @@ class Renderer:
 
         self.h, self.w = self.scr.getmaxyx()
 
-        self._set_team_colours()
+        self._set_colours()
 
         self._session_y_offset = 0
         self._lap_data_header_y_offset = 3
@@ -188,7 +188,7 @@ class Renderer:
             self._lap_data_y_offset + pos - 1,
             2,
             msg,
-            curses.color_pair(100 + team_index[name]) | curses.A_BOLD,
+            curses.color_pair(TEAM_COLOUR_OFFSET + team_index[name]) | curses.A_BOLD,
         )
         self.scr.clrtoeol()
 
@@ -197,9 +197,19 @@ class Renderer:
             self._current_car_data_y_offset,
             2,
             f"{car_data.speed:3d} km/h | "
-            f"{car_data.engineRPM:5d} RPM | "
+        )
+        self.scr.addstr(
+            self._current_car_data_y_offset,
+            15,
+            f"{car_data.engineRPM:5d} RPM | ", self._get_rpm_color(car_data.revLightsPercent)
+        )
+        self.scr.addstr(
+            self._current_car_data_y_offset,
+            30,
             f"Gear: {self._format_gear(car_data.gear)}",
         )
+
+
         self.scr.clrtoeol()
         self.scr.addstr(
             self._current_car_data_y_offset + 1,
@@ -259,9 +269,15 @@ class Renderer:
             8: "8th",
         }[n]
 
-    def _set_team_colours(self):
-        init_team_colour_pairs()
+    def _set_colours(self):
+        init_colours()
 
+    def _get_rpm_color(self, percentage):
+        if percentage > 90:
+            return curses.color_pair(STATUS_COLOUR_OFFSET + 1)
+        elif percentage > 70:
+            return curses.color_pair(STATUS_COLOUR_OFFSET)
+        return curses.color_pair(0)
 
 class Position:
     def __init__(self, vehicle_idx, lap_data: LapData_V1):

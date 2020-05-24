@@ -1,6 +1,9 @@
 import curses
 
 # curses.COLOR_MERC = curses.init_color(101,1,0,0)
+TEAM_COLOUR_OFFSET = 100
+STATUS_COLOUR_OFFSET = 200
+
 
 team_colours_rgb_by_id = {
     0: (0, 210, 190),
@@ -16,9 +19,18 @@ team_colours_rgb_by_id = {
 }
 
 
-def init_team_colour_pairs():
+def init_colours():
     curses.start_color()
+    init_team_colour_pairs()
+
+    init_status_colours()
+
+def init_team_colour_pairs():
     for i, rgb in team_colours_rgb_by_id.items():
-        j = 100 + i  # avoid collision with real colours
+        j = TEAM_COLOUR_OFFSET + i  # avoid collision with real colours
         curses.init_color(j, *rgb)
         curses.init_pair(j, curses.COLOR_WHITE, j)
+
+def init_status_colours():
+    curses.init_pair(STATUS_COLOUR_OFFSET, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(STATUS_COLOUR_OFFSET +1, curses.COLOR_RED, curses.COLOR_BLACK)
