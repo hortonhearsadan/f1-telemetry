@@ -38,6 +38,12 @@ def init_team_colour_pairs():
 def init_status_colours():
     curses.init_pair(STATUS_COLOUR_OFFSET, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(STATUS_COLOUR_OFFSET + 1, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(STATUS_COLOUR_OFFSET + 2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+
+    curses.init_color(STATUS_COLOUR_OFFSET + 3, 255, 165, 0)
+    curses.init_pair(
+        STATUS_COLOUR_OFFSET + 3, STATUS_COLOUR_OFFSET + 3, curses.COLOR_BLACK
+    )
 
 
 def format_name(name: str):
@@ -45,3 +51,14 @@ def format_name(name: str):
         split_names = name.split(" ")
         return split_names[0][0].upper() + ". " + split_names[-1].upper()
     return name
+
+
+def get_damage_colour(percentage):
+    if percentage <= 20:
+        return curses.color_pair(STATUS_COLOUR_OFFSET)
+    elif percentage <= 40:
+        return curses.color_pair(STATUS_COLOUR_OFFSET + 2)
+    elif percentage <= 60:
+        return curses.color_pair(STATUS_COLOUR_OFFSET + 3)
+
+    return curses.color_pair(STATUS_COLOUR_OFFSET + 1)

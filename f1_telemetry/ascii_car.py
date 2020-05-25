@@ -1,12 +1,14 @@
-left_wing = """______/--
-|      
-|____/--|
-|       |"""
+from enum import Enum
 
-right_wing = """--\______
-        |
-|--\____|
-|       |"""
+left_wing = """ ___________/--
+ ||||||||||||| 
+ |________/--| 
+ |            |"""
+
+right_wing = """--\___________ 
+|||||||||||||| 
+|--\_________| 
+|            | """
 
 tyre = """ _____ 
 |     |
@@ -14,18 +16,17 @@ tyre = """ _____
 |     |
 |_____|"""
 
-body = """      
-      /  \      
+body = """      /  \      
      /    \     
 ----/      \----
 ---/        \---
   /          \  
  /            \ 
- |            |
- |            |
- |            |
+ |            | 
+ |            | 
+ |            | 
  \            / 
-  \          / 
+  \          /  
 ---|        |---
 ---|        |---
    |        |   """
@@ -35,6 +36,17 @@ rear_wing = """|------------------|
 |------------------|"""
 
 
+class Component(Enum):
+    LeftWing = "left_wing"
+    RightWing = "right_wing"
+    FrontLeftTyre = "fl_tyre"
+    FrontRightTyre = "fr_tyre"
+    BackLeftTyre = "bl_tyre"
+    BackRightTyre = "br_tyre"
+    RearWing = "rear_wing"
+    Body = "body"
+
+
 class AsciiCar:
     def __init__(self):
         self.left_wing = left_wing
@@ -42,6 +54,23 @@ class AsciiCar:
         self.tyre = tyre
         self.body = body
         self.rear_wing = rear_wing
+
+        self.left_wing_0 = None
+        self.right_wing_0 = None
+        self.fl_tyre_0 = None
+        self.fr_tyre_0 = None
+        self.br_tyre_0 = None
+        self.bl_tyre_0 = None
+        self.body_0 = None
+        self.rear_wing_0 = None
+
+        self._validate_car_design()
+
+        self._set_component_coordinates()
+
+    @property
+    def components(self):
+        return self.left_wing, self.right_wing, self.body, self.rear_wing, self.tyre
 
     @property
     def left_wing_width(self):
@@ -75,10 +104,36 @@ class AsciiCar:
     def tyre_height(self):
         return self.calc_component_height(self.tyre)
 
+    @property
+    def rear_wing_width(self):
+        return self.calc_component_height(self.rear_wing)
+
     @staticmethod
     def calc_component_width(component: str):
-        return max(len(line) for line in component.splitlines())
+        return len(component.splitlines()[0])
 
     @staticmethod
     def calc_component_height(component: str):
         return len(component.splitlines())
+
+    def _validate_car_design(self):
+        for c in self.components:
+            split_comp = c.splitlines()
+            if len({len(i) for i in split_comp}) != 1:
+                raise ValueError("car design has non-square components")
+
+    def _set_component_coordinates(self):
+        self.left_wing_0 = (0, 0)
+        self.right_wing_0 = (self.left_wing_width, 0)
+
+        self.body_0 = (self.tyre_width, self.left_wing_height)
+
+        self.fl_tyre_0 = (0, self.left_wing_height)
+        self.fr_tyre_0 = (self.tyre_width + self.body_width, self.left_wing_height)
+        self.bl_tyre_0 = (
+            0,
+            self.left_wing_height + self.body_height - self.tyre_height,
+        )
+        self.br_tyre_0 = (self.fr_tyre_0[0], self.bl_tyre_0[1])
+
+        self.rear_wing_0 = (self.body_0[0] - 2, self.body_0[1] + self.body_height)

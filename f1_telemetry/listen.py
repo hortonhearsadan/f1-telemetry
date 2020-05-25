@@ -14,14 +14,16 @@ from f1_2019_telemetry.packets import (
     PacketParticipantsData_V1,
     PacketSessionData_V1,
     unpack_udp_packet,
+    PacketCarStatusData_V1,
 )
 
-from f1_telemetry.ascii_car import AsciiCar
+from f1_telemetry.ascii_car import AsciiCar, Component
 from f1_telemetry.formatting import (
     init_colours,
     TEAM_COLOUR_OFFSET,
     STATUS_COLOUR_OFFSET,
     format_name,
+    get_damage_colour,
 )
 
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -111,6 +113,10 @@ class PacketProcessor:
             if self.my_id is not None:
                 car_data = packet.carTelemetryData[self.my_id]
                 self._renderer.print_car_data(car_data)
+
+        elif isinstance(packet, PacketCarStatusData_V1):
+            car_status = packet.carStatusData[self.my_id]
+            self._renderer.print_damage_data(car_status)
 
         self._renderer.refresh()
 
@@ -223,7 +229,18 @@ class Renderer:
         )
         self.scr.clrtoeol()
 
-        self.render_car()
+    def print_damage_data(self, car_status):
+        damage_data = {
+            Component.LeftWing: car_status.frontLeftWingDamage,
+            Component.RightWing: car_status.frontRightWingDamage,
+            Component.RearWing: car_status.rearWingDamage,
+            Component.BackLeftTyre: car_status.tyresDamage[0],
+            Component.BackRightTyre: car_status.tyresDamage[1],
+            Component.FrontLeftTyre: car_status.tyresDamage[2],
+            Component.FrontRightTyre: car_status.tyresDamage[3],
+            Component.Body: 0,
+        }
+        self.render_car(damage_data)
 
         self.scr.clrtoeol()
 
@@ -290,90 +307,58 @@ class Renderer:
     def _get_team_colour(self, team_index, name):
         return curses.color_pair(TEAM_COLOUR_OFFSET + team_index[name]) | curses.A_BOLD
 
-    def render_car(self):
-        self._render_fl_tyre()
-        self._render_fr_tyre()
-        self._render_bl_tyre()
-        self._render_br_tyre()
-        self._render_body()
-        self._render_left_wing()
-        self._render_right_wing()
-        self._render_rear_wing()
+    def render_car(self, damage_data):
+        self._render_fl_tyre(get_damage_colour(damage_data[Component.FrontLeftTyre]))
+        self._render_fr_tyre(get_damage_colour(damage_data[Component.FrontRightTyre]))
+        self._render_bl_tyre(get_damage_colour(damage_data[Component.BackLeftTyre]))
+        self._render_br_tyre(get_damage_colour(damage_data[Component.BackRightTyre]))
+
+        self._render_body(get_damage_colour(damage_data[Component.Body]))
+        self._render_left_wing(get_damage_colour(damage_data[Component.LeftWing]))
+        self._render_right_wing(get_damage_colour(damage_data[Component.RightWing]))
+        self._render_rear_wing(get_damage_colour(damage_data[Component.RearWing]))
 
     def _render_ascii(self, ascii_string, y_offset, x_offset, colour):
+        extra_y_offset = self._lap_data_y_offset
+        extra_x_offset = self._car_x_offset
         for y, line in enumerate(ascii_string.splitlines()):
-            self.scr.addstr(y_offset + y, x_offset, line, colour)
+            self.scr.addstr(
+                y_offset + extra_y_offset + y, x_offset + extra_x_offset, line, colour
+            )
 
-    def _render_left_wing(self):
-        y = self._lap_data_y_offset
-        x = self._car_x_offset + self.car.tyre_width - 1
+    def _render_left_wing(self, colour):
+        x, y = self.car.left_wing_0
+        self._render_ascii(self.car.left_wing, y, x, colour)
+
+    def _render_right_wing(self, colour):
+        x, y = self.car.right_wing_0
+        self._render_ascii(self.car.right_wing, y, x, colour)
+
+    def _render_body(self, colour):
+        x, y = self.car.body_0
         self._render_ascii(
-            self.car.left_wing, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
+            self.car.body, y, x, colour,
         )
 
-    def _render_right_wing(self):
-        y = self._lap_data_y_offset
-        x = self._car_x_offset + self.car.left_wing_width + self.car.tyre_width - 1
-        self._render_ascii(
-            self.car.right_wing, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
-        )
+    def _render_rear_wing(self, colour):
+        x, y = self.car.rear_wing_0
+        self._render_ascii(self.car.rear_wing, y, x, colour)
 
-    def _render_body(self):
-        y = self._lap_data_y_offset + self.car.left_wing_height - 1
-        x = self._car_x_offset + self.car.tyre_width
-        self._render_ascii(self.car.body, y, x, curses.color_pair(STATUS_COLOUR_OFFSET))
+    def _render_fl_tyre(self, colour):
+        x, y = self.car.fl_tyre_0
+        self._render_ascii(self.car.tyre, y, x, colour)
 
-    def _render_rear_wing(self):
-        y = (
-            self._lap_data_y_offset
-            + self.car.left_wing_height
-            + self.car.body_height
-            - 1
-        )
-        x = self._car_x_offset + self.car.tyre_width - 2
-        self._render_ascii(
-            self.car.rear_wing, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
-        )
+    def _render_fr_tyre(self, colour):
+        x, y = self.car.fr_tyre_0
+        self._render_ascii(self.car.tyre, y, x, colour)
 
-    def _render_fl_tyre(self):
-        y = self._lap_data_y_offset + self.car.left_wing_height
-        x = self._car_x_offset
-        self._render_ascii(
-            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
-        )
+    def _render_bl_tyre(self, colour):
+        x, y = self.car.bl_tyre_0
+        self._render_ascii(self.car.tyre, y, x, colour)
 
-    def _render_fr_tyre(self):
-        y = self._lap_data_y_offset + self.car.left_wing_height
-        x = self._car_x_offset + self.car.tyre_width + self.car.body_width
-        self._render_ascii(
-            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
-        )
-
-    def _render_bl_tyre(self):
-        y = (
-            self._lap_data_y_offset
-            + self.car.left_wing_height
-            + self.car.body_height
-            - self.car.tyre_height
-            - 1
-        )
-        x = self._car_x_offset
-        self._render_ascii(
-            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
-        )
-
-    def _render_br_tyre(self):
-        y = (
-            self._lap_data_y_offset
-            + self.car.left_wing_height
-            + self.car.body_height
-            - self.car.tyre_height
-            - 1
-        )
-        x = self._car_x_offset + self.car.tyre_width + self.car.body_width
-        self._render_ascii(
-            self.car.tyre, y, x, curses.color_pair(STATUS_COLOUR_OFFSET)
-        )
+    def _render_br_tyre(self, colour):
+        x, y = self.car.br_tyre_0
+        self._render_ascii(self.car.tyre, y, x, colour)
 
 
 class Position:
