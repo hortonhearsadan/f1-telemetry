@@ -18,3 +18,5 @@ f1-2019-telemetry-player RECORDEDFILE
 
 and it will stream your packets, for more info on the cli tools see
 https://pypi.org/project/f1-2019-telemetry/
+
+also copy setting_example.py and set your name as the Driver Name otherwise the leaderboard will try to format your name as plaintext instead of A. PERSON like everyone else
