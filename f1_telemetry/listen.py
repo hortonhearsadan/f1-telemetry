@@ -176,9 +176,10 @@ class Renderer:
         session_duration = self._format_time(session.sessionDuration)
         session_time = f"{session_elapsed} / {session_duration}"
 
+        self.scr.move(self._session_y_offset, 0)
+        self.scr.clrtoeol()
         x = self._center(session_name)
         self.scr.addstr(self._session_y_offset, x, session_name)
-        self.scr.clrtoeol()
 
         x = self._center(session_time)
         self.scr.addstr(self._session_y_offset + 1, x, session_time)
