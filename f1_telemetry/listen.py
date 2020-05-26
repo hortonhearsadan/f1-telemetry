@@ -115,8 +115,9 @@ class PacketProcessor:
                 self._renderer.print_car_data(car_data)
 
         elif isinstance(packet, PacketCarStatusData_V1):
-            car_status = packet.carStatusData[self.my_id]
-            self._renderer.print_damage_data(car_status)
+            if self.my_id is not None:
+                car_status = packet.carStatusData[self.my_id]
+                self._renderer.print_damage_data(car_status)
 
         self._renderer.refresh()
 

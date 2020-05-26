@@ -54,7 +54,7 @@ def format_name(name: str):
 
 
 def get_damage_colour(percentage):
-    if percentage <= 20:
+    if percentage <= 15:
         return curses.color_pair(STATUS_COLOUR_OFFSET)
     elif percentage <= 40:
         return curses.color_pair(STATUS_COLOUR_OFFSET + 2)
