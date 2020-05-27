@@ -223,12 +223,28 @@ class Renderer:
         )
 
         self.scr.clrtoeol()
+
+        throttle, _ = divmod(round(car_data.throttle * 100), 5)
+        brake, _ = divmod(round(car_data.brake * 100), 5)
+        self.scr.addstr(self._current_car_data_y_offset + 2, 2, "Throttle :")
+        self.scr.addstr(self._current_car_data_y_offset + 3, 2, "Brake    :")
+
         self.scr.addstr(
-            self._current_car_data_y_offset + 1,
-            2,
-            f"Throttle: {round(car_data.throttle*100):3d}% | "
-            f"Brake: {round(car_data.brake*100):3d}%",
+            self._current_car_data_y_offset + 2,
+            13,
+            "|" * throttle,
+            curses.color_pair(STATUS_COLOUR_OFFSET),
         )
+
+        self.scr.clrtoeol()
+
+        self.scr.addstr(
+            self._current_car_data_y_offset + 3,
+            13,
+            "|" * brake,
+            curses.color_pair(STATUS_COLOUR_OFFSET + 1),
+        )
+
         self.scr.clrtoeol()
 
     def print_damage_data(self, car_status):
