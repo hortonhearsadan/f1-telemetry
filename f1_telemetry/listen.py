@@ -249,14 +249,16 @@ class Renderer:
         self.scr.clrtoeol()
 
         if car_data.revLightsPercent > 1:
-            yellow_revs, _ = divmod(min(round(car_data.revLightsPercent),70),5)
-            green_revs, _ = divmod(max(min(round(car_data.revLightsPercent), 90)-70, 0), 5)
-            red_revs, _ = divmod(max(min(round(car_data.revLightsPercent),100)-90, 0), 5)
+            yellow_revs, _ = divmod(min(round(car_data.revLightsPercent), 70), 5)
+            green_revs, _ = divmod(
+                max(min(round(car_data.revLightsPercent), 90) - 70, 0), 5
+            )
+            red_revs, _ = divmod(
+                max(min(round(car_data.revLightsPercent), 100) - 90, 0), 5
+            )
 
             self.scr.addstr(
-                self._current_car_data_y_offset + 4,
-                13,
-                "|" * yellow_revs,
+                self._current_car_data_y_offset + 4, 13, "|" * yellow_revs,
             )
             self.scr.clrtoeol()
 
@@ -270,14 +272,12 @@ class Renderer:
             #
             self.scr.addstr(
                 self._current_car_data_y_offset + 4,
-                13+18,
+                13 + 18,
                 "|" * red_revs,
                 curses.color_pair(STATUS_COLOUR_OFFSET + 1),
             )
 
             self.scr.clrtoeol()
-
-
 
     def print_damage_data(self, car_status):
         damage_data = {
