@@ -228,6 +228,7 @@ class Renderer:
         brake, _ = divmod(round(car_data.brake * 100), 5)
         self.scr.addstr(self._current_car_data_y_offset + 2, 2, "Throttle :")
         self.scr.addstr(self._current_car_data_y_offset + 3, 2, "Brake    :")
+        self.scr.addstr(self._current_car_data_y_offset + 4, 2, "RPM      :")
 
         self.scr.addstr(
             self._current_car_data_y_offset + 2,
@@ -246,6 +247,37 @@ class Renderer:
         )
 
         self.scr.clrtoeol()
+
+        if car_data.revLightsPercent > 1:
+            yellow_revs, _ = divmod(min(round(car_data.revLightsPercent),70),5)
+            green_revs, _ = divmod(max(min(round(car_data.revLightsPercent), 90)-70, 0), 5)
+            red_revs, _ = divmod(max(min(round(car_data.revLightsPercent),100)-90, 0), 5)
+
+            self.scr.addstr(
+                self._current_car_data_y_offset + 4,
+                13,
+                "|" * yellow_revs,
+            )
+            self.scr.clrtoeol()
+
+            self.scr.addstr(
+                self._current_car_data_y_offset + 4,
+                13 + 14,
+                "|" * green_revs,
+                curses.color_pair(STATUS_COLOUR_OFFSET + 2),
+            )
+            self.scr.clrtoeol()
+            #
+            self.scr.addstr(
+                self._current_car_data_y_offset + 4,
+                13+18,
+                "|" * red_revs,
+                curses.color_pair(STATUS_COLOUR_OFFSET + 1),
+            )
+
+            self.scr.clrtoeol()
+
+
 
     def print_damage_data(self, car_status):
         damage_data = {
