@@ -22,6 +22,7 @@ from f1_telemetry.render import Renderer
 udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("", 20777))
 
+
 class PacketProcessor:
     def __init__(self, socket):
         self.udp_socket = socket

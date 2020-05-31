@@ -3,7 +3,14 @@ import curses
 from f1_2019_telemetry.packets import CarTelemetryData_V1, PacketSessionData_V1
 
 from f1_telemetry.ascii_car import Component, AsciiCar
-from f1_telemetry.formatting import STATUS_COLOUR_OFFSET, TEAM_COLOUR_OFFSET, format_name, get_damage_colour, init_colours
+from f1_telemetry.formatting import (
+    STATUS_COLOUR_OFFSET,
+    TEAM_COLOUR_OFFSET,
+    format_name,
+    get_damage_colour,
+    init_colours,
+)
+
 
 class Renderer:
     def __init__(self):
@@ -276,4 +283,3 @@ class Renderer:
     def _render_br_tyre(self, colour):
         x, y = self.car.br_tyre_0
         self._render_ascii(self.car.tyre, y, x, colour)
-
