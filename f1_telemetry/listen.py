@@ -15,6 +15,7 @@ from f1_2019_telemetry.packets import (
     PacketSessionData_V1,
     unpack_udp_packet,
     PacketCarStatusData_V1,
+    PacketEventData_V1,
 )
 
 from f1_telemetry.render import Renderer
@@ -96,6 +97,8 @@ class PacketProcessor:
 
         self._render_damage_data(packet)
 
+        self._render_event_data(packet)
+
         self._renderer.refresh()
 
     def set_indices(self, packet):
@@ -141,6 +144,9 @@ class PacketProcessor:
                 car_status = packet.carStatusData[self.my_id]
                 self._renderer.print_damage_data(car_status)
 
+    def _render_event_data(self, packet):
+        pass
+
 
 class Position:
     def __init__(self, vehicle_idx, lap_data: LapData_V1):
@@ -149,6 +155,9 @@ class Position:
         self.current_lap_time = lap_data.currentLapTime
         self.last_lap_time = lap_data.lastLapTime
         self.best_lap_time = lap_data.bestLapTime
+        self.status = lap_data.resultStatus
+        self.in_pit = bool(lap_data.pitStatus)
+        self.penalties = lap_data.penalties
 
 
 def main():

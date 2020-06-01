@@ -1,6 +1,10 @@
 import curses
 
-from f1_2019_telemetry.packets import CarTelemetryData_V1, PacketSessionData_V1
+from f1_2019_telemetry.packets import (
+    CarTelemetryData_V1,
+    PacketSessionData_V1,
+    TrackIDs,
+)
 
 from f1_telemetry.ascii_car import Component, AsciiCar
 from f1_telemetry.formatting import (
@@ -10,6 +14,7 @@ from f1_telemetry.formatting import (
     get_damage_colour,
     init_colours,
 )
+from f1_telemetry.lapStatus import LapStatus
 
 
 class Renderer:
@@ -29,7 +34,7 @@ class Renderer:
         self._lap_data_header_y_offset = 3
         self._lap_data_y_offset = 5
         self._current_car_data_y_offset = 26
-        self._car_x_offset = 80
+        self._car_x_offset = 85
 
     def destroy(self):
         curses.curs_set(self._cursor_mode)
@@ -47,30 +52,33 @@ class Renderer:
         session_elapsed = self._format_time(
             session.sessionDuration - session.sessionTimeLeft
         )
+        track_name = self._format_track_id(session.trackId)
         session_duration = self._format_time(session.sessionDuration)
         session_time = f"{session_elapsed} / {session_duration}"
 
         self.scr.move(self._session_y_offset, 0)
         self.scr.clrtoeol()
-        x = self._center(session_name)
-        self.scr.addstr(self._session_y_offset, x, session_name)
+
+        session_string = session_name + " - " + track_name
+        x = self._center(session_string)
+        self.scr.addstr(self._session_y_offset, x, session_string)
 
         x = self._center(session_time)
         self.scr.addstr(self._session_y_offset + 1, x, session_time)
         self.scr.clrtoeol()
 
     def print_lap_data_header(self):
-        msg = f" P. NAME                 | CURRENT LAP  | LAST LAP     | BEST LAP"
+        msg = f" P. NAME                 | CURRENT LAP  | LAST LAP     | BEST LAP     | STATUS"
 
         self.scr.addstr(self._lap_data_header_y_offset, 2, msg)
 
     def print_lap_data(self, lap_data, name: str, team_index: dict):
-        pos = lap_data.position
+        pos = self._get_position_value(lap_data)
         clt = self._format_time(lap_data.current_lap_time, with_millis=True)
         llt = self._format_time(lap_data.last_lap_time, with_millis=True)
         blt = self._format_time(lap_data.best_lap_time, with_millis=True)
-
-        msg = f"{pos:2d}. {format_name(name):20s} | {clt} | {llt} | {blt}"
+        status = self._format_status(lap_data)
+        msg = f"{pos:2d}. {format_name(name):20s} | {clt} | {llt} | {blt} | {status}"
 
         self.scr.addstr(
             self._lap_data_y_offset + pos - 1,
@@ -283,3 +291,21 @@ class Renderer:
     def _render_br_tyre(self, colour):
         x, y = self.car.br_tyre_0
         self._render_ascii(self.car.tyre, y, x, colour)
+
+    def _get_position_value(self, lap_data):
+        if lap_data.status == LapStatus.Retired:
+            return "RET"
+        elif lap_data.status == LapStatus.NotClassified:
+            return "N/C"
+        elif lap_data.status == LapStatus.Disqualified:
+            return "DSQ"
+        return lap_data.position
+
+    def _format_status(self, lap_data):
+        pit = "P" if lap_data.in_pit else " "
+        penalties = str(lap_data.penalties)
+
+        return pit + "+" + str(penalties)
+
+    def _format_track_id(self, track_id):
+        return TrackIDs.get(track_id, "Unknown")

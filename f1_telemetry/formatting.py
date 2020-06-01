@@ -1,6 +1,5 @@
 import curses
 
-# curses.COLOR_MERC = curses.init_color(101,1,0,0)
 from settings import DRIVER_NAME
 
 TEAM_COLOUR_OFFSET = 100
