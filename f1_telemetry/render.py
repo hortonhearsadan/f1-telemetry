@@ -78,10 +78,10 @@ class Renderer:
         llt = self._format_time(lap_data.last_lap_time, with_millis=True)
         blt = self._format_time(lap_data.best_lap_time, with_millis=True)
         status = self._format_status(lap_data)
-        msg = f"{pos:2d}. {format_name(name):20s} | {clt} | {llt} | {blt} | {status}"
+        msg = f"{pos:<3s} {format_name(name):20s} | {clt} | {llt} | {blt} | {status}"
 
         self.scr.addstr(
-            self._lap_data_y_offset + pos - 1,
+            self._lap_data_y_offset + lap_data.position - 1,
             2,
             msg,
             self._get_team_colour(team_index, name),
@@ -299,7 +299,7 @@ class Renderer:
             return "N/C"
         elif lap_data.status == LapStatus.Disqualified:
             return "DSQ"
-        return lap_data.position
+        return str(lap_data.position)+"."
 
     def _format_status(self, lap_data):
         pit = "P" if lap_data.in_pit else " "
